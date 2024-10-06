@@ -1,3 +1,4 @@
+import math
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -19,6 +20,30 @@ def summarize_data(df: pd.DataFrame) -> None:
     else:
         print('No Numerical Columns')
 
+def _eda_plot(df, column, ax):
+    if df[column].dtype in ['int64']:
+        sns.boxplot(df[column].sort_values(), ax=ax)
+        ax.set(
+            xlabel=column, 
+            ylabel=f'{column} Counts', 
+            title=f'{column} Distribution'
+        )
+    elif df[column].dtype in ['float64']:
+        sns.histplot(df[column].sort_values(), kde=True, ax=ax)
+        ax.set(
+            xlabel=column, 
+            ylabel=f'{column} Counts', 
+            title=f'{column} Distribution'
+        )
+    elif df[column].dtype in ['O', 'str']:
+        sns.countplot(x=df[column].sort_values(), ax=ax)
+        ax.set(
+            xlabel=column, 
+            ylabel=f'{column} Counts', 
+            title=f'{column} Count Distribution'
+        )
+        ax.bar_label(ax.containers[0])
+        
 def generate_eda_plot(df: pd.DataFrame, columns: Optional[list[str]] = None) -> None:
 
     if columns is None:
@@ -26,31 +51,17 @@ def generate_eda_plot(df: pd.DataFrame, columns: Optional[list[str]] = None) -> 
 
     n_plots = len(columns)
     
-    fig, axes = plt.subplots(1, n_plots, figsize=(5 * n_plots, 4))
-    
-    for i, column in enumerate(columns):
-        if df[column].dtype in ['int64']:
-            sns.boxplot(df[column].sort_values(), ax=axes[i])
-            axes[i].set(
-                xlabel=column, 
-                ylabel=f'{column} Counts', 
-                title=f'{column} Distribution'
-            )
-        elif df[column].dtype in ['float64']:
-            sns.histplot(df[column].sort_values(), kde=True, ax=axes[i])
-            axes[i].set(
-                xlabel=column, 
-                ylabel=f'{column} Counts', 
-                title=f'{column} Distribution'
-            )
-        elif df[column].dtype in ['O', 'str']:
-            sns.countplot(x=df[column].sort_values(), ax=axes[i])
-            axes[i].set(
-                xlabel=column, 
-                ylabel=f'{column} Counts', 
-                title=f'{column} Count Distribution'
-            )
-            axes[i].bar_label(axes[i].containers[0])
-    
+    if n_plots <= 4:
+        fig, axes = plt.subplots(1, n_plots, figsize=(5 * n_plots, 4))
+        for i, column in enumerate(columns):
+            _eda_plot(df, column, axes[i])
+    else:
+        fig, axes = plt.subplots(math.ceil(n_plots / 2), 2, figsize=(10, 4 * math.ceil(n_plots / 2)))
+        k = 0
+        for i in range(axes.shape[0]):
+            for j in range(axes.shape[1]):
+                _eda_plot(df, columns[k], axes[i][j])
+                k += 1
+
     plt.tight_layout()
     plt.show()
