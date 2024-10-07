@@ -51,17 +51,34 @@ def generate_eda_plot(df: pd.DataFrame, columns: Optional[list[str]] = None) -> 
 
     n_plots = len(columns)
     
-    if n_plots <= 4:
+    if n_plots == 1:
+        fig, ax = plt.subplots(1, 1, figsize=(8, 4))
+        _eda_plot(df, columns[0], ax)
+    elif n_plots <= 3:
         fig, axes = plt.subplots(1, n_plots, figsize=(5 * n_plots, 4))
         for i, column in enumerate(columns):
             _eda_plot(df, column, axes[i])
-    else:
+    elif n_plots <= 6:
         fig, axes = plt.subplots(math.ceil(n_plots / 2), 2, figsize=(10, 4 * math.ceil(n_plots / 2)))
         k = 0
         for i in range(axes.shape[0]):
             for j in range(axes.shape[1]):
                 _eda_plot(df, columns[k], axes[i][j])
                 k += 1
+                if k == n_plots:
+                    break
+    else:
+        fig, axes = plt.subplots(math.ceil(n_plots / 4), 4, figsize=(16, 3 * math.ceil(n_plots / 2)))
+        k = 0
+        for i in range(axes.shape[0]):
+            for j in range(axes.shape[1]):
+                _eda_plot(df, columns[k], axes[i][j])
+                k += 1
+                if k == n_plots:
+                    break
 
     plt.tight_layout()
     plt.show()
+
+if __name__ == '__main__':
+    print('test')
